@@ -77,10 +77,12 @@ export default function BabiesPage() {
               <p className="text-gray-600">Pemantauan pertumbuhan dan perkembangan bayi</p>
             </div>
           </div>
-          <Button className="bg-green-600 hover:bg-green-700">
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Data
-          </Button>
+          <Link href="/forms">
+            <Button className="bg-green-600 hover:bg-green-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Data
+            </Button>
+          </Link>
         </div>
 
         {/* Baby Selection */}
