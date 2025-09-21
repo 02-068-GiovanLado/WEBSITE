@@ -20,6 +20,7 @@ import { calculateAge } from "@/lib/utils/health-calculations"
 export function PatientRegistrationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   const {
     register,
@@ -47,7 +48,6 @@ export function PatientRegistrationForm() {
 
   const { onChange: onDateChange, ...dateFieldProps } = register("dateOfBirth")
 
-  // Auto-determine category based on age
   const autoCategory = dateOfBirth
     ? (() => {
         const age = calculateAge(dateOfBirth)
@@ -62,10 +62,7 @@ export function PatientRegistrationForm() {
     setSubmitResult(null)
 
     try {
-      // In real app, send to API endpoint
       console.log("[v0] Patient registration data:", data)
-
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       setSubmitResult({
@@ -105,12 +102,16 @@ export function PatientRegistrationForm() {
         {/* Date of Birth */}
         <div className="space-y-2">
           <Label>Tanggal Lahir *</Label>
-          <Popover>
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={cn("w-full justify-start text-left font-normal", !dateOfBirth && "text-muted-foreground")}
                 type="button"
+                onClick={() => {
+                  console.log("[v0] Date picker clicked")
+                  setIsCalendarOpen(true)
+                }}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {dateOfBirth ? format(dateOfBirth, "PPP", { locale: id }) : <span>Pilih tanggal lahir</span>}
@@ -125,11 +126,11 @@ export function PatientRegistrationForm() {
                   if (date) {
                     setValue("dateOfBirth", date, { shouldValidate: true })
                     onDateChange({ target: { value: date } } as any)
-                    // Auto-set category based on age
                     const age = calculateAge(date)
                     const newCategory =
                       age.years === 0 && age.months <= 24 ? "baby" : age.years >= 60 ? "elderly" : "adult"
                     setValue("category", newCategory, { shouldValidate: true })
+                    setIsCalendarOpen(false)
                   }
                 }}
                 initialFocus
