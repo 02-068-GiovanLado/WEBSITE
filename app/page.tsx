@@ -33,7 +33,7 @@ export default function HealthDashboard() {
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold text-gray-900 text-balance">Sistem Monitoring Kesehatan Desa Tarahan</h1>
           <p className="text-lg text-gray-600 text-pretty">
-            Dashboard pemantauan kesehatan bayi dan lansia Desa Sukamaju
+            Dashboard pemantauan kesehatan bayi dan lansia Desa Tarahan
           </p>
         </div>
 
