@@ -30,10 +30,22 @@ export function PatientRegistrationForm() {
     reset,
   } = useForm<PatientFormData>({
     resolver: zodResolver(patientSchema),
+    defaultValues: {
+      name: "",
+      dateOfBirth: undefined,
+      gender: undefined,
+      category: undefined,
+      address: "",
+      phoneNumber: "",
+      guardianName: "",
+      guardianPhone: "",
+    },
   })
 
   const selectedCategory = watch("category")
   const dateOfBirth = watch("dateOfBirth")
+
+  const { onChange: onDateChange, ...dateFieldProps } = register("dateOfBirth")
 
   // Auto-determine category based on age
   const autoCategory = dateOfBirth
@@ -51,7 +63,7 @@ export function PatientRegistrationForm() {
 
     try {
       // In real app, send to API endpoint
-      console.log("Patient registration data:", data)
+      console.log("[v0] Patient registration data:", data)
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -62,6 +74,7 @@ export function PatientRegistrationForm() {
       })
       reset()
     } catch (error) {
+      console.log("[v0] Registration error:", error)
       setSubmitResult({
         success: false,
         message: "Gagal mendaftarkan pasien. Silakan coba lagi.",
@@ -97,26 +110,33 @@ export function PatientRegistrationForm() {
               <Button
                 variant="outline"
                 className={cn("w-full justify-start text-left font-normal", !dateOfBirth && "text-muted-foreground")}
+                type="button"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {dateOfBirth ? format(dateOfBirth, "PPP", { locale: id }) : <span>Pilih tanggal lahir</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
                 selected={dateOfBirth}
                 onSelect={(date) => {
-                  setValue("dateOfBirth", date || new Date())
-                  // Auto-set category based on age
-                  if (date && autoCategory) {
-                    setValue("category", autoCategory)
+                  console.log("[v0] Date selected:", date)
+                  if (date) {
+                    setValue("dateOfBirth", date, { shouldValidate: true })
+                    onDateChange({ target: { value: date } } as any)
+                    // Auto-set category based on age
+                    const age = calculateAge(date)
+                    const newCategory =
+                      age.years === 0 && age.months <= 24 ? "baby" : age.years >= 60 ? "elderly" : "adult"
+                    setValue("category", newCategory, { shouldValidate: true })
                   }
                 }}
                 initialFocus
                 captionLayout="dropdown-buttons"
                 fromYear={1920}
                 toYear={new Date().getFullYear()}
+                locale={id}
               />
             </PopoverContent>
           </Popover>
@@ -139,7 +159,7 @@ export function PatientRegistrationForm() {
         {/* Gender */}
         <div className="space-y-2">
           <Label>Jenis Kelamin *</Label>
-          <Select onValueChange={(value: "male" | "female") => setValue("gender", value)}>
+          <Select onValueChange={(value: "male" | "female") => setValue("gender", value, { shouldValidate: true })}>
             <SelectTrigger>
               <SelectValue placeholder="Pilih jenis kelamin" />
             </SelectTrigger>
@@ -161,7 +181,9 @@ export function PatientRegistrationForm() {
           <Label>Kategori Pasien *</Label>
           <Select
             value={selectedCategory}
-            onValueChange={(value: "baby" | "elderly" | "adult") => setValue("category", value)}
+            onValueChange={(value: "baby" | "elderly" | "adult") =>
+              setValue("category", value, { shouldValidate: true })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Pilih kategori pasien" />
